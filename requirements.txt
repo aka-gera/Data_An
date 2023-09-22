@@ -8,4 +8,4 @@ seaborn
 scikit-learn
 tensorflow
 matplotlib  
-pip=23.2.1
+pip==23.2.1
