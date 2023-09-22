@@ -52,11 +52,9 @@ import plotly.graph_objects as go
 from sklearn.tree import DecisionTreeClassifier
 
 from sklearn.metrics import accuracy_score
-
-import base64
+ 
 import datetime
-import io 
-import plotly.express as px 
+import io  
 
 tcouleur = 'plotly_dark'
 bcouleur = 'navy'
