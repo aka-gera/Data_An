@@ -55,10 +55,8 @@ from sklearn.metrics import accuracy_score
 
 import base64
 import datetime
-import io
-import pandas as pd
-import plotly.express as px
-import pandas as pd
+import io 
+import plotly.express as px 
 
 tcouleur = 'plotly_dark'
 bcouleur = 'navy'
@@ -262,41 +260,7 @@ def ChooseML(ml, X_train, X_test, y_train, y_test,X_pred, cmLabel,shw):
 
 
     return fig2,fig3,y_pred,scre
-
-import zipfile
-import requests
-from io import BytesIO
-
-#Convert a link in to dataframe
-
-
-def My_Zip(zip_urlX,ext):
-# ext = '.data'
-
-    response = requests.get(zip_urlX)
-    # Check if the request was successful
-    if response.status_code == 200:
-        # Read the content of the ZIP archive
-        zip_data = BytesIO(response.content)
-
-        # Create a ZipFile object from the fetched data
-        with zipfile.ZipFile(zip_data, 'r') as zip_file:
-            file_list = zip_file.namelist()
-
-            csv_file_name = next(element for element in file_list if '.'+str(ext) in element)
-
-            # Check if the CSV file exists in the ZIP archive
-            if csv_file_name in file_list:
-                # Read the CSV file into a DataFrame
-                with zip_file.open(csv_file_name) as csv_file:
-                    df = pd.read_csv(csv_file, encoding="ISO-8859-1")
-
-            else:
-                print(f"CSV file '{csv_file_name}' not found in the ZIP archive.")
-    else:
-        print("Failed to fetch the ZIP archive.")
-    return df
-
+ 
 def Cleaning(df):
     dff = df
     cmLabel = [ '`'+str(elm) for elm in df[df.columns[-1]].dropna().unique()]
