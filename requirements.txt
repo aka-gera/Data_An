@@ -7,7 +7,6 @@ scipy
 seaborn
 scikit-learn
 tensorflow
-matplotlib
-base64
+matplotlib 
 datetime
 io
