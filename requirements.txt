@@ -8,3 +8,6 @@ seaborn
 scikit-learn
 tensorflow
 matplotlib
+base64
+datetime
+io
