@@ -55,6 +55,7 @@ from sklearn.metrics import accuracy_score
 
 import base64
 import io
+import numpy as np
 
 tcouleur = 'plotly_dark'
 bcouleur = 'navy'
@@ -259,70 +260,66 @@ def ChooseML(ml, X_train, X_test, y_train, y_test,X_pred, cmLabel,shw):
 
     return fig2,fig3,y_pred,scre
 
-def Cleaning(df):
-    dff = df
-    cmLabel = [ '`'+str(elm) for elm in df[df.columns[-1]].dropna().unique()]
+def CleaningVar(dfT):
 
-
-    nrows,ncols = df.shape
-    nom = ['Feature'+str(i) for i in range(ncols)]
-    df.columns = nom
+    cmLabel = [ '`'+str(elm) for elm in dfT[dfT.columns[-1]].dropna().unique()]
+    nrows,ncols = dfT.shape
 
     typOfVar = []
     for j in range(ncols):
-        for i,elm in df[df.columns[j]].dropna().items():
+        for i,elm in dfT[dfT.columns[j]].dropna().items():
             if isinstance(elm,str):
                 typOfVar.append(j)
                 break
 
     mapping = {}
     for j in typOfVar:
-        mapping[df.columns[j]] = {}
-        uniq = df[df.columns[j]].dropna().unique()
+        mapping[dfT.columns[j]] = {}
+        uniq = dfT[dfT.columns[j]].dropna().unique()
         for i in range(len(uniq)):
             key = uniq[i]
-            mapping[df.columns[j]][key] = i
+            mapping[dfT.columns[j]][key] = i
 
-    for j in typOfVar:
-        df[df.columns[j]] = df[df.columns[j]].map(mapping[df.columns[j]])
+    swapMapping = {v: k for k, v in mapping[dfT.columns[-1]].items()}
 
+    return  cmLabel,typOfVar,mapping,swapMapping
 
-    for j in range(ncols):
-        mode1 = df[df.columns[j]].mode()
-        df[df.columns[j]] = df[df.columns[j]].fillna(mode1[0])
+def CleaningDF(df,typOfVar,mapping):
 
-    return  df,dff,cmLabel,typOfVar,mapping,ncols
+    dfTemp = pd.DataFrame(np.zeros_like(df), columns=df.columns, index=df.index)
+    nrows,ncols = df.shape
 
-def CleaningPred(df,typOfVar,mapping):
-
-    _,ncols = df.shape
-    df.columns = ['Feature'+str(i) for i in range(ncols)]
-
-    for j in typOfVar:
-        df[df.columns[j]] = df[df.columns[j]].map(mapping[df.columns[j]])
+    if typOfVar is not None:
+        for j in typOfVar:
+            dfTemp[dfTemp.columns[j]] = df[df.columns[j]].map(mapping[df.columns[j]])
 
 
     for j in range(ncols):
-        mode1 = df[df.columns[j]].mode()
-        df[df.columns[j]] = df[df.columns[j]].fillna(mode1[0])
+        mode1 = dfTemp[dfTemp.columns[j]].mode()
+        dfTemp[df.columns[j]] = dfTemp[df.columns[j]].fillna(mode1[0])
 
-    return  df
+
+    return  dfTemp
 
 def Algorithm(df,dfpred):
 
-    df,dff,cmLabel,typOfVar,mapping,ncols = Cleaning(df )
+    cmLabel,typOfVar,mapping,swapMapping = CleaningVar(df)
 
-    dfpred = CleaningPred(dfpred,typOfVar,mapping)
+    # dfpred,dff,cmLabel,typOfVar,mapping,ncols = Cleaning(dfpred )
+    df1 = CleaningDF(df,typOfVar,mapping)
+    df1.columns = ['Feature'+str(i) for i in range(df.shape[1])] #['`'+elm for elm in df.columns]
 
-    cols = list(df[df.columns[:-1]].columns)
-    X = df[dff.columns[:-1]].values
-    Y = df[dff.columns[-1]].values
+    dfpred1 = CleaningDF(dfpred,typOfVar,mapping)
+    dfpred1.columns =['Feature'+str(i) for i in range(dfpred.shape[1])]
 
-    X_pred = dfpred[dff.columns[:-1]].values
+    X = df1[df1.columns[:-1]].values
+    Y = df1[df1.columns[-1]].values
+
+    X_pred = dfpred1[df1.columns[:-1]].values
 
     X_train, X_test, y_train, y_test = train_test_split( X, Y, test_size=0.3, random_state=4)
 
-    return  dff,X_train, X_test, y_train, y_test,X_pred, cmLabel,typOfVar,mapping
+    return  df1,X_train, X_test, y_train, y_test,X_pred, cmLabel,typOfVar,swapMapping
 
 def parse_contents(contents, filename):
     content_type, content_string = contents.split(',')
@@ -432,7 +429,7 @@ app.layout = html.Div(
          id='upload-data',
         children=html.Div([
             'Drag and Drop or ',
-            html.A('Select Files')
+            html.A('Select File with extension .data, .csv, or .xls')
         ]),
         style={
             'display': 'flex',
@@ -463,7 +460,7 @@ app.layout = html.Div(
       id='upload-data2',
         children=html.Div([
             'Drag and Drop or ',
-            html.A('Select Files')
+            html.A('Select File with extension .data, .csv, or .xls')
         ]),
         style={
             'display': 'flex',
@@ -560,6 +557,25 @@ app.layout = html.Div(
           ),
     html.Br(),
     html.Br(),
+    html.Div([
+        html.A(
+            html.Img(src='https://img.icons8.com/color/48/000000/github.png'),
+            href='https://github.com/aka-gera',
+            target='_blank'
+        ),
+        html.A(
+            html.Img(src='https://img.icons8.com/color/48/000000/linkedin.png'),
+            href='https://www.linkedin.com/in/aka-gera/',
+            target='_blank'
+        ),
+        html.A(
+            html.Img(src='https://img.icons8.com/color/48/000000/youtube.png'),
+            href='https://www.youtube.com/@aka-Gera',
+            target='_blank'
+        ),
+    ], style={'display': 'flex', 'justify-content': 'center'})
+
+
 ])
 
 
@@ -585,7 +601,7 @@ app.layout = html.Div(
         Input('upload-data2', 'filename'),
         Input('site-dropdown1', 'value'),
         Input('site-dropdown2', 'value'),
-        Input("btn-download", "n_clicks"),
+        Input('btn-download', 'n_clicks'),
         ],
         prevent_initial_call=True
               )
@@ -599,11 +615,13 @@ def update_output(list_of_contents, list_of_names,list_of_contents2, list_of_nam
 
         # children = [item[0] for item in children_and_df]  # Extract the HTML components
         df = [item[1] for item in children_and_df if item[1] is not None][0]  # Extract the DataFrame
+        # df.columns = ['`p'+elm for elm in df.columns]
 
 
         children_and_df2 = [ parse_contents(c, n) for c, n in zip(list_of_contents2, list_of_names2)]
 
         dfpred = [item[1] for item in children_and_df2 if item[1] is not None][0]  # Extract the DataFrame
+        # dfpred.columns = ['`p'+elm for elm in dfpred.columns]
 
         dff,X_train, X_test, y_train, y_test,X_pred, cmLabel,typOfVar,mapping = Algorithm(df,dfpred)
         filtered_df = dff[dff.columns[0:-1]]
@@ -615,6 +633,7 @@ def update_output(list_of_contents, list_of_names,list_of_contents2, list_of_nam
             figure1 =  dcc.Graph( figure = plot_history_dash(filtered_df,feature) )
 
         fig2,fig3,y_pred,scre = ChooseML(ml, X_train, X_test, y_train, y_test,X_pred, cmLabel,shw)
+        y_pred = pd.DataFrame(y_pred).replace(mapping).values
 
         fig2 = dcc.Graph( figure = fig2)
         fig3 = dcc.Graph( figure = fig3)
