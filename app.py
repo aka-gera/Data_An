@@ -273,20 +273,24 @@ def CleaningVar(dfT):
                 break
 
     mapping = {}
-    for j in typOfVar:
-        mapping[dfT.columns[j]] = {}
-        uniq = dfT[dfT.columns[j]].dropna().unique()
-        for i in range(len(uniq)):
-            key = uniq[i]
-            mapping[dfT.columns[j]][key] = i
+    swapMapping = {}
 
-    swapMapping = {v: k for k, v in mapping[dfT.columns[-1]].items()}
+    if typOfVar is not None:
+        for j in typOfVar:
+            mapping[dfT.columns[j]] = {}
+            uniq = dfT[dfT.columns[j]].dropna().unique()
+            for i in range(len(uniq)):
+                key = uniq[i]
+                mapping[dfT.columns[j]][key] = i
+
+        if ncols in typOfVar:
+            swapMapping = {v: k for k, v in mapping[dfT.columns[-1]].items()}
 
     return  cmLabel,typOfVar,mapping,swapMapping
 
 def CleaningDF(df,typOfVar,mapping):
 
-    dfTemp = pd.DataFrame(np.zeros_like(df), columns=df.columns, index=df.index)
+    dfTemp = df
     nrows,ncols = df.shape
 
     if typOfVar is not None:
@@ -633,7 +637,9 @@ def update_output(list_of_contents, list_of_names,list_of_contents2, list_of_nam
             figure1 =  dcc.Graph( figure = plot_history_dash(filtered_df,feature) )
 
         fig2,fig3,y_pred,scre = ChooseML(ml, X_train, X_test, y_train, y_test,X_pred, cmLabel,shw)
-        y_pred = pd.DataFrame(y_pred).replace(mapping).values
+
+        if df.shape[1] in typOfVar:
+            y_pred = pd.DataFrame(y_pred).replace(mapping).values
 
         fig2 = dcc.Graph( figure = fig2)
         fig3 = dcc.Graph( figure = fig3)
